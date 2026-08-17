@@ -1,0 +1,4 @@
+[routeros_test]
+# Replace with a lab RouterOS device before execution.
+# router.example.invalid ansible_host=192.0.2.10
+

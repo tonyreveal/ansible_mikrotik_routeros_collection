@@ -1,0 +1,33 @@
+---
+- name: Validate RouterOS DNS resources
+  ansible.builtin.assert:
+    that:
+      - routeros_dns_settings is mapping
+      - routeros_dns_static_entries is sequence
+      - >-
+        routeros_dns_static_entries | selectattr('name', 'defined') | list | length ==
+        routeros_dns_static_entries | length
+      - >-
+        routeros_dns_static_entries | selectattr('address', 'defined') | list | length ==
+        routeros_dns_static_entries | length
+    fail_msg: DNS settings must be a mapping and static entries require name and address.
+
+- name: Configure RouterOS DNS resolver settings
+  changed_when: true
+  when: routeros_dns_settings | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dns set{% for option in routeros_dns_settings | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+
+- name: Add RouterOS DNS static entries
+  loop: "{{ routeros_dns_static_entries }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_dns_static_entries | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dns static add name={{ item.name }} address={{ item.address }}{% if item.ttl is defined %} ttl={{ item.ttl }}{% endif %}{% if item.comment is defined %} comment="{{ item.comment }}"{% endif %}{% if item.disabled is defined %} disabled={{ item.disabled | ternary('yes', 'no') }}{% endif %}
+...

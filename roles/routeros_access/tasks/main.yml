@@ -1,0 +1,91 @@
+---
+- name: Validate RouterOS access variables
+  ansible.builtin.assert:
+    that:
+      - routeros_access_users is sequence
+      - routeros_access_ssh_settings is mapping
+      - routeros_access_api_service_settings is sequence
+      - >-
+        routeros_access_users | selectattr('username', 'defined') | list | length ==
+        routeros_access_users | length
+      - >-
+        routeros_access_users | selectattr('group', 'defined') | list | length ==
+        routeros_access_users | length
+      - >-
+        routeros_access_api_service_settings | selectattr('service', 'defined') | list | length ==
+        routeros_access_api_service_settings | length
+    fail_msg: >-
+      Provide RouterOS users with username and group, SSH settings as a mapping,
+      and API service entries with service and options.
+
+- name: Check whether requested RouterOS users exist
+  loop: "{{ routeros_access_users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  register: routeros_access_user_lookup
+  changed_when: false
+  when: routeros_access_users | length > 0
+  community.routeros.command:
+    commands:
+      - "/user print where name={{ item.username }}"
+
+- name: Create missing RouterOS users
+  loop: "{{ routeros_access_user_lookup.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.username }}"
+  no_log: true
+  changed_when: true
+  when:
+    - item.stdout | join('\n') is not search(item.item.username, ignorecase=false)
+    - item.item.password is defined
+  community.routeros.command:
+    commands:
+      - >-
+        /user add name={{ item.item.username }} password={{ item.item.password }}
+        group={{ item.item.group }}
+
+- name: Update RouterOS user group and optional disabled state
+  loop: "{{ routeros_access_users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  no_log: true
+  changed_when: true
+  when: routeros_access_users | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /user set [find name={{ item.username }}] group={{ item.group }}{% if item.disabled is defined %} disabled={{ item.disabled | ternary('yes', 'no') }}{% endif %}
+
+- name: Update password for requested RouterOS users
+  loop: "{{ routeros_access_users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  no_log: true
+  changed_when: true
+  when:
+    - routeros_access_users | length > 0
+    - item.password is defined
+  community.routeros.command:
+    commands:
+      - "/user set [find name={{ item.username }}] password={{ item.password }}"
+
+- name: Configure RouterOS SSH settings
+  loop: "{{ routeros_access_ssh_settings | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  changed_when: true
+  when: routeros_access_ssh_settings | length > 0
+  community.routeros.command:
+    commands:
+      - "/ip ssh set {{ item.key }}={{ item.value }}"
+
+- name: Configure RouterOS API service settings
+  loop: "{{ routeros_access_api_service_settings | subelements('options') }}"
+  loop_control:
+    label: "{{ item.0.service }} {{ item.1.option }}"
+  changed_when: true
+  when: routeros_access_api_service_settings | length > 0
+  community.routeros.command:
+    commands:
+      - "/ip service set [find name={{ item.0.service }}] {{ item.1.option }}={{ item.1.value }}"
+...

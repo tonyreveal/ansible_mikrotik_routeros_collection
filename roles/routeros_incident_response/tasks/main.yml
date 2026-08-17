@@ -1,0 +1,31 @@
+---
+- name: Validate incident-response resources
+  ansible.builtin.assert:
+    that:
+      - routeros_incident_response_block_addresses is sequence
+      - routeros_incident_response_disable_users is sequence
+      - routeros_incident_response_block_addresses | length + routeros_incident_response_disable_users | length > 0
+    fail_msg: Supply at least one address to block or user to disable.
+
+- name: Block incident-response addresses
+  loop: "{{ routeros_incident_response_block_addresses }}"
+  loop_control:
+    label: "{{ item.address }}"
+  register: routeros_incident_response_block_result
+  changed_when: true
+  when: routeros_incident_response_block_addresses | length > 0
+  community.routeros.command:
+    commands:
+      - "/ip firewall address-list add list={{ item.list | default('incident-block') }} address={{ item.address }} comment={{ item.comment | default('ansible-incident-response') }}"
+
+- name: Disable compromised RouterOS users
+  loop: "{{ routeros_incident_response_disable_users }}"
+  loop_control:
+    label: "{{ item }}"
+  register: routeros_incident_response_disable_result
+  no_log: true
+  changed_when: true
+  community.routeros.command:
+    commands:
+      - "/user disable [find name={{ item }}]"
+...

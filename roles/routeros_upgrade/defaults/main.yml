@@ -1,0 +1,6 @@
+---
+routeros_upgrade_channel: stable
+routeros_upgrade_reboot_timeout: 600
+routeros_upgrade_connect_timeout: 30
+routeros_upgrade_wait_sleep: 10
+...

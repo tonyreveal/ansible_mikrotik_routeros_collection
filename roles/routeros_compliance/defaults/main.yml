@@ -1,0 +1,4 @@
+---
+routeros_compliance_check_updates: true
+routeros_compliance_check_services: true
+...

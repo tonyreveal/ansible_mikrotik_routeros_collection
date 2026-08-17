@@ -1,0 +1,8 @@
+---
+- name: Exercise routeros_upgrade role
+  hosts: routeros_test
+  gather_facts: false
+  serial: 1
+  roles:
+    - role: routeros_upgrade
+...

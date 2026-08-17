@@ -1,0 +1,39 @@
+---
+- name: Validate firewall policy
+  ansible.builtin.assert:
+    that:
+      - routeros_firewall_address_lists is sequence
+      - routeros_firewall_filter_rules is sequence
+      - routeros_firewall_nat_rules is sequence
+    fail_msg: Firewall resources must be supplied as lists of mappings.
+- name: Manage RouterOS firewall address lists
+  loop: "{{ routeros_firewall_address_lists }}"
+  loop_control:
+    label: "{{ item.list }} {{ item.address }}"
+  changed_when: true
+  when: routeros_firewall_address_lists | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip firewall address-list add list={{ item.list }} address={{ item.address }}{% if item.timeout is defined %} timeout={{ item.timeout }}{% endif %}{% if item.comment is defined %} comment="{{ item.comment }}"{% endif %}
+- name: Manage RouterOS filter rules
+  loop: "{{ routeros_firewall_filter_rules }}"
+  loop_control:
+    label: "{{ item.chain }}"
+  changed_when: true
+  when: routeros_firewall_filter_rules | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip firewall filter add chain={{ item.chain }}{% for option in item.options | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+- name: Manage RouterOS NAT rules
+  loop: "{{ routeros_firewall_nat_rules }}"
+  loop_control:
+    label: "{{ item.chain }}"
+  changed_when: true
+  when: routeros_firewall_nat_rules | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip firewall nat add chain={{ item.chain }}{% for option in item.options | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

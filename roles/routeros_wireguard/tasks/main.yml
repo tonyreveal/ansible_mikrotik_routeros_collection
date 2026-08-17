@@ -1,0 +1,38 @@
+---
+- name: Validate RouterOS WireGuard resources
+  ansible.builtin.assert:
+    that:
+      - routeros_wireguard_interfaces is sequence
+      - routeros_wireguard_peers is sequence
+      - >-
+        routeros_wireguard_interfaces | selectattr('name', 'defined') | list | length ==
+        routeros_wireguard_interfaces | length
+      - >-
+        routeros_wireguard_peers | selectattr('interface', 'defined') | list | length ==
+        routeros_wireguard_peers | length
+    fail_msg: WireGuard interfaces require name; peers require interface.
+
+- name: Add RouterOS WireGuard interfaces
+  loop: "{{ routeros_wireguard_interfaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+  changed_when: true
+  when: routeros_wireguard_interfaces | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /interface wireguard add name={{ item.name }}{% if item.listen_port is defined %} listen-port={{ item.listen_port }}{% endif %}{% if item.private_key is defined %} private-key={{ item.private_key }}{% endif %}{% if item.mtu is defined %} mtu={{ item.mtu }}{% endif %}
+
+- name: Add RouterOS WireGuard peers
+  loop: "{{ routeros_wireguard_peers }}"
+  loop_control:
+    label: "{{ item.interface }} {{ item.public_key | default('peer') }}"
+  no_log: true
+  changed_when: true
+  when: routeros_wireguard_peers | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /interface wireguard peers add interface={{ item.interface }} public-key={{ item.public_key }} allowed-address={{ item.allowed_address }}{% if item.endpoint_address is defined %} endpoint-address={{ item.endpoint_address }}{% endif %}{% if item.endpoint_port is defined %} endpoint-port={{ item.endpoint_port }}{% endif %}{% if item.persistent_keepalive is defined %} persistent-keepalive={{ item.persistent_keepalive }}{% endif %}{% if item.comment is defined %} comment="{{ item.comment }}"{% endif %}
+...

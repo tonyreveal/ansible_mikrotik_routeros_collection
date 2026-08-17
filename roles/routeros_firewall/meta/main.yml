@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: Tony Reveal <https://github.com/tonyreveal>
+  description: Manage RouterOS firewall and NAT policy.
+  license: GPL-3.0-or-later
+  min_ansible_version: '2.16'
+  galaxy_tags:
+    - routeros
+    - mikrotik
+    - network
+dependencies: []
+...

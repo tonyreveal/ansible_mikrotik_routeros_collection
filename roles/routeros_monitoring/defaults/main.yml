@@ -1,0 +1,5 @@
+---
+routeros_monitoring_syslog_actions: []
+routeros_monitoring_snmp: {}
+routeros_monitoring_netwatch: []
+...

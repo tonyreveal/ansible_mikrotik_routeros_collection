@@ -1,0 +1,59 @@
+---
+- name: Validate DHCP server resources
+  ansible.builtin.assert:
+    that:
+      - routeros_dhcp_server_pools is sequence
+      - routeros_dhcp_server_networks is sequence
+      - routeros_dhcp_server_instances is sequence
+      - >-
+        routeros_dhcp_server_pools | selectattr('name', 'defined') | list | length ==
+        routeros_dhcp_server_pools | length
+      - >-
+        routeros_dhcp_server_pools | selectattr('ranges', 'defined') | list | length ==
+        routeros_dhcp_server_pools | length
+      - >-
+        routeros_dhcp_server_networks | selectattr('address', 'defined') | list | length ==
+        routeros_dhcp_server_networks | length
+      - >-
+        routeros_dhcp_server_instances | selectattr('name', 'defined') | list | length ==
+        routeros_dhcp_server_instances | length
+      - >-
+        routeros_dhcp_server_instances | selectattr('interface', 'defined') | list | length ==
+        routeros_dhcp_server_instances | length
+      - >-
+        routeros_dhcp_server_instances | selectattr('address_pool', 'defined') | list | length ==
+        routeros_dhcp_server_instances | length
+    fail_msg: DHCP pools, networks, and instances are missing required fields.
+
+- name: Add RouterOS DHCP address pools
+  loop: "{{ routeros_dhcp_server_pools }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_dhcp_server_pools | length > 0
+  community.routeros.command:
+    commands:
+      - "/ip pool add name={{ item.name }} ranges={{ item.ranges }}"
+
+- name: Add RouterOS DHCP networks
+  loop: "{{ routeros_dhcp_server_networks }}"
+  loop_control:
+    label: "{{ item.address }}"
+  changed_when: true
+  when: routeros_dhcp_server_networks | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dhcp-server network add address={{ item.address }}{% if item.gateway is defined %} gateway={{ item.gateway }}{% endif %}{% if item.dns_server is defined %} dns-server={{ item.dns_server }}{% endif %}{% if item.domain is defined %} domain={{ item.domain }}{% endif %}{% if item.comment is defined %} comment="{{ item.comment }}"{% endif %}
+
+- name: Add RouterOS DHCP server instances
+  loop: "{{ routeros_dhcp_server_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_dhcp_server_instances | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dhcp-server add name={{ item.name }} interface={{ item.interface }} address-pool={{ item.address_pool }}{% if item.lease_time is defined %} lease-time={{ item.lease_time }}{% endif %}{% if item.disabled is defined %} disabled={{ item.disabled | ternary('yes', 'no') }}{% endif %}
+...

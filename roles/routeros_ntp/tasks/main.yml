@@ -1,0 +1,30 @@
+---
+- name: Validate RouterOS NTP resources
+  ansible.builtin.assert:
+    that:
+      - routeros_ntp_client_settings is mapping
+      - routeros_ntp_servers is sequence
+      - >-
+        routeros_ntp_servers | selectattr('address', 'defined') | list | length ==
+        routeros_ntp_servers | length
+    fail_msg: NTP client settings must be a mapping and servers require address.
+
+- name: Configure RouterOS NTP client settings
+  changed_when: true
+  when: routeros_ntp_client_settings | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /system ntp client set{% for option in routeros_ntp_client_settings | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+
+- name: Add RouterOS NTP servers
+  loop: "{{ routeros_ntp_servers }}"
+  loop_control:
+    label: "{{ item.address }}"
+  changed_when: true
+  when: routeros_ntp_servers | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /system ntp client servers add address={{ item.address }}{% if item.disabled is defined %} disabled={{ item.disabled | ternary('yes', 'no') }}{% endif %}
+...

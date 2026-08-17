@@ -1,0 +1,27 @@
+---
+- name: Validate DHCP relay resources
+  ansible.builtin.assert:
+    that:
+      - routeros_dhcp_relay_instances is sequence
+      - >-
+        routeros_dhcp_relay_instances | selectattr('name', 'defined') | list | length ==
+        routeros_dhcp_relay_instances | length
+      - >-
+        routeros_dhcp_relay_instances | selectattr('interface', 'defined') | list | length ==
+        routeros_dhcp_relay_instances | length
+      - >-
+        routeros_dhcp_relay_instances | selectattr('dhcp_server', 'defined') | list | length ==
+        routeros_dhcp_relay_instances | length
+    fail_msg: DHCP relay entries require name, interface, and dhcp_server.
+
+- name: Add RouterOS DHCP relay instances
+  loop: "{{ routeros_dhcp_relay_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_dhcp_relay_instances | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dhcp-relay add name={{ item.name }} interface={{ item.interface }} dhcp-server={{ item.dhcp_server }}{% if item.local_address is defined %} local-address={{ item.local_address }}{% endif %}{% if item.disabled is defined %} disabled={{ item.disabled | ternary('yes', 'no') }}{% endif %}
+...

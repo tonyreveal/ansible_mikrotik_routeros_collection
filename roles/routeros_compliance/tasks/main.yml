@@ -1,0 +1,28 @@
+---
+- name: Validate compliance settings
+  ansible.builtin.assert:
+    that:
+      - routeros_compliance_check_updates is boolean
+      - routeros_compliance_check_services is boolean
+    fail_msg: Compliance check settings must be boolean.
+- name: Collect RouterOS package update evidence
+  register: routeros_compliance_update_result
+  changed_when: false
+  when: routeros_compliance_check_updates | bool
+  community.routeros.command:
+    commands:
+      - /system/package/update/check
+- name: Collect RouterOS service evidence
+  register: routeros_compliance_service_result
+  changed_when: false
+  when: routeros_compliance_check_services | bool
+  community.routeros.command:
+    commands:
+      - /ip/service/print
+- name: Publish compliance evidence
+  ansible.builtin.debug:
+    msg:
+      updates: "{{ routeros_compliance_update_result.stdout | default([]) }}"
+      services: "{{ routeros_compliance_service_result.stdout | default([]) }}"
+    verbosity: 1
+...

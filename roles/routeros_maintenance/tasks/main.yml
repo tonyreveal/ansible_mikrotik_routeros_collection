@@ -1,0 +1,38 @@
+---
+- name: Validate maintenance inputs
+  ansible.builtin.assert:
+    that:
+      - routeros_maintenance_reboot_timeout | int > 0
+      - routeros_maintenance_connect_timeout | int > 0
+    fail_msg: RouterOS maintenance variables are invalid.
+- name: Check for RouterOS package updates
+  register: routeros_maintenance_update_check
+  changed_when: false
+  when: routeros_maintenance_update_packages | bool
+  community.routeros.command:
+    commands:
+      - /system/package/update/check
+- name: Install RouterOS package updates
+  changed_when: true
+  when:
+    - routeros_maintenance_update_packages | bool
+    - routeros_maintenance_update_check.stdout | join('\n') is search('new version is available', ignorecase=true)
+  community.routeros.command:
+    commands:
+      - /system/package/update/install
+- name: Reboot RouterOS device for maintenance
+  register: routeros_maintenance_reboot_result
+  changed_when: true
+  failed_when:
+    - routeros_maintenance_reboot_result.failed | default(false)
+    - routeros_maintenance_reboot_result.msg | default('') is not search('closed|unreachable|reset|timeout', ignorecase=true)
+  when: routeros_maintenance_reboot | bool
+  community.routeros.command:
+    commands:
+      - /system/reboot
+- name: Wait for RouterOS maintenance reboot
+  when: routeros_maintenance_reboot | bool
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_maintenance_reboot_timeout }}"
+    connect_timeout: "{{ routeros_maintenance_connect_timeout }}"
+...

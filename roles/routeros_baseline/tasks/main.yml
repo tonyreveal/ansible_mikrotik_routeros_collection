@@ -1,0 +1,32 @@
+---
+- name: Validate baseline settings
+  ansible.builtin.assert:
+    that:
+      - routeros_baseline_identity is mapping
+      - routeros_baseline_dns is mapping
+      - routeros_baseline_ntp is mapping
+    fail_msg: Baseline settings must be mappings.
+
+- name: Configure RouterOS identity
+  changed_when: true
+  when: routeros_baseline_identity.name is defined
+  community.routeros.command:
+    commands:
+      - "/system identity set name={{ routeros_baseline_identity.name }}"
+
+- name: Configure RouterOS DNS
+  changed_when: true
+  when: routeros_baseline_dns | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip dns set{% for option in routeros_baseline_dns | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+
+- name: Configure RouterOS NTP
+  changed_when: true
+  when: routeros_baseline_ntp | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /system ntp client set{% for option in routeros_baseline_ntp | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

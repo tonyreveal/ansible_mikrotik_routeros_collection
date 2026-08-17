@@ -1,0 +1,122 @@
+---
+- name: Validate RouterOS upgrade role inputs
+  ansible.builtin.assert:
+    that:
+      - routeros_upgrade_channel in ['stable', 'testing', 'development', 'long-term']
+      - routeros_upgrade_reboot_timeout | int > 0
+      - routeros_upgrade_connect_timeout | int > 0
+      - routeros_upgrade_wait_sleep | int > 0
+    fail_msg: RouterOS upgrade role variables are invalid.
+
+- name: Explain that check mode is unsupported for firmware upgrades
+  when: ansible_check_mode | bool
+  ansible.builtin.fail:
+    msg: >-
+      routeros_upgrade performs live package and firmware upgrades and cannot
+      provide a meaningful check-mode prediction. Run without --check.
+
+- name: Check for RouterOS package updates
+  register: routeros_upgrade_check
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/package/update/check
+
+- name: Determine whether a RouterOS update is available
+  ansible.builtin.set_fact:
+    routeros_upgrade_available: >-
+      {{ routeros_upgrade_check.stdout | join('\n') is search('new version is available', ignorecase=true) }}
+
+- name: Install RouterOS package update
+  register: routeros_upgrade_install
+  changed_when: routeros_upgrade_available | bool
+  when: routeros_upgrade_available | bool
+  community.routeros.command:
+    commands:
+      - /system/package/update/set channel={{ routeros_upgrade_channel }}
+      - /system/package/update/install
+
+- name: Wait for RouterOS package update reboot
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_upgrade_reboot_timeout }}"
+    connect_timeout: "{{ routeros_upgrade_connect_timeout }}"
+    sleep: "{{ routeros_upgrade_wait_sleep }}"
+  when: routeros_upgrade_available | bool
+
+- name: Read RouterBOARD firmware state
+  register: routeros_upgrade_routerboard_state
+  changed_when: false
+  when: routeros_upgrade_available | bool
+  community.routeros.command:
+    commands:
+      - /system/routerboard/print
+
+- name: Upgrade RouterBOARD firmware when required
+  register: routeros_upgrade_routerboard
+  changed_when: true
+  when:
+    - routeros_upgrade_available | bool
+    - routeros_upgrade_routerboard_state.stdout | join('\n') is search('upgrade-firmware=yes', ignorecase=true)
+  community.routeros.command:
+    commands:
+      - /system/routerboard/upgrade
+
+- name: Reboot after RouterBOARD firmware upgrade
+  register: routeros_upgrade_routerboard_reboot
+  changed_when: true
+  failed_when:
+    - routeros_upgrade_routerboard_reboot.failed | default(false)
+    - >-
+      routeros_upgrade_routerboard_reboot.msg | default('') is not
+      search('closed|unreachable|reset|timeout', ignorecase=true)
+  when:
+    - routeros_upgrade_routerboard is defined
+    - routeros_upgrade_routerboard is changed
+  community.routeros.command:
+    commands:
+      - /system/reboot
+
+- name: Wait for router after RouterBOARD firmware upgrade
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_upgrade_reboot_timeout }}"
+    connect_timeout: "{{ routeros_upgrade_connect_timeout }}"
+    sleep: "{{ routeros_upgrade_wait_sleep }}"
+  when:
+    - routeros_upgrade_routerboard is defined
+    - routeros_upgrade_routerboard is changed
+
+- name: Collect final RouterOS state
+  register: routeros_upgrade_final_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/resource/print
+      - /system/package/print
+
+- name: Collect final RouterBOARD state
+  register: routeros_upgrade_final_routerboard_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/routerboard/print
+
+- name: Check that no RouterOS package update remains
+  register: routeros_upgrade_final_check
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/package/update/check
+
+- name: Validate RouterOS and RouterBOARD state
+  ansible.builtin.assert:
+    that:
+      - routeros_upgrade_final_state.stdout | length > 0
+      - routeros_upgrade_final_routerboard_state.stdout | length > 0
+      - >-
+        {{ routeros_upgrade_final_check.stdout | join('\n') is not search('new version is available', ignorecase=true) }}
+      - >-
+        {{ (not routeros_upgrade_available | bool) or
+           (routeros_upgrade_final_routerboard_state.stdout | join('\n') is not search('upgrade-firmware=yes', ignorecase=true)) }}
+    fail_msg: RouterOS or RouterBOARD validation failed.
+    success_msg: RouterOS packages and RouterBOARD firmware are current.
+...

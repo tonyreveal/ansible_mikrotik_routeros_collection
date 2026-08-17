@@ -1,0 +1,39 @@
+---
+- name: Validate routing resources
+  ansible.builtin.assert:
+    that:
+      - routeros_routing_static_routes is sequence
+      - routeros_routing_bgp_peers is sequence
+      - routeros_routing_ospf_instances is sequence
+    fail_msg: Routing resources must be supplied as lists of mappings.
+- name: Manage RouterOS static routes
+  loop: "{{ routeros_routing_static_routes }}"
+  loop_control:
+    label: "{{ item.dst_address }}"
+  changed_when: true
+  when: routeros_routing_static_routes | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip route add dst-address={{ item.dst_address }} gateway={{ item.gateway }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+- name: Manage RouterOS BGP peers
+  loop: "{{ routeros_routing_bgp_peers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_routing_bgp_peers | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /routing bgp connection add name={{ item.name }} remote.address={{ item.remote_address }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+- name: Manage RouterOS OSPF instances
+  loop: "{{ routeros_routing_ospf_instances }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_routing_ospf_instances | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /routing ospf instance add name={{ item.name }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

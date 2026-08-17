@@ -1,0 +1,4 @@
+---
+routeros_ntp_client_settings: {}
+routeros_ntp_servers: []
+...

@@ -1,0 +1,5 @@
+---
+routeros_routing_static_routes: []
+routeros_routing_bgp_peers: []
+routeros_routing_ospf_instances: []
+...
