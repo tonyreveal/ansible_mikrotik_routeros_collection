@@ -1,9 +1,0 @@
----
-- name: Upgrade RouterOS devices
-  hosts: routeros_devices
-  gather_facts: false
-  serial: 1
-
-  roles:
-    - role: routeros_upgrade
-...
