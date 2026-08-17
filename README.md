@@ -9,7 +9,7 @@ through Ansible network connections.
 
 The collection includes focused roles for access control, backups, baseline
 configuration, firewall policy, VPNs, WireGuard, routing, VLANs, DHCP, DNS,
-NTP, monitoring, compliance evidence, inventory, maintenance, and RouterOS
+NTP, logging, SNMP, Netwatch, traffic flow, alert destinations, compliance evidence, inventory, maintenance, and RouterOS
 package and RouterBOARD upgrades.
 
 Roles expose structured variables and construct RouterOS commands internally.
@@ -121,11 +121,15 @@ Role-specific documentation is available in the source repository:
 - [routeros_dhcp_server](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_dhcp_server)
 - [routeros_dns](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_dns)
 - [routeros_firewall_config](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_firewall_config)
+- [routeros_logging](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_logging)
 - [routeros_inventory](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_inventory)
+- [routeros_alert_destinations](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_alert_destinations)
 - [routeros_maintenance](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_maintenance)
-- [routeros_monitoring](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_monitoring)
+- [routeros_netwatch](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_netwatch)
 - [routeros_ntp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_ntp)
 - [routeros_routing](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_routing)
+- [routeros_snmp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_snmp)
+- [routeros_traffic_flow](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_traffic_flow)
 - [routeros_upgrade](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_upgrade)
 - [routeros_vlan](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_vlan)
 - [routeros_vpn](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_vpn)
