@@ -1,0 +1,34 @@
+---
+- name: Validate RouterOS remote logging settings
+  ansible.builtin.assert:
+    that:
+      - routeros_logging_remote_action is mapping
+      - routeros_logging_remote_action.name is defined
+      - routeros_logging_remote_action.remote is defined
+      - routeros_logging_remote_action.remote | length > 0
+      - routeros_logging_remote_action.remote_log_format | default('syslog') in ['syslog', 'cef', 'default']
+      - routeros_logging_remote_action.remote_protocol | default('udp') in ['udp', 'tcp', 'tls']
+      - routeros_logging_topic_rules is sequence
+      - >-
+        routeros_logging_topic_rules | selectattr('topics', 'defined') | list | length ==
+        routeros_logging_topic_rules | length
+    fail_msg: Remote logging requires an aggregator address and topic mappings must include topics.
+
+- name: Configure RouterOS remote logging action
+  changed_when: true
+  community.routeros.command:
+    commands:
+      - >-
+        /system logging action set [find name={{ routeros_logging_remote_action.name }}]{% for option in routeros_logging_remote_action | dict2items if option.key != 'name' %} {{ option.key | replace('_', '-') }}={{ option.value }}{% endfor %}
+
+- name: Add RouterOS remote logging topic rules
+  loop: "{{ routeros_logging_topic_rules }}"
+  loop_control:
+    label: "{{ item.topics }}"
+  changed_when: true
+  when: routeros_logging_topic_rules | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /system logging add topics={{ item.topics }} action={{ item.action | default(routeros_logging_remote_action.name) }}{% if item.prefix is defined %} prefix={{ item.prefix }}{% endif %}{% if item.regex is defined %} regex="{{ item.regex }}"{% endif %}
+...

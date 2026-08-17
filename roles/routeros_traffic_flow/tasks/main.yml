@@ -1,0 +1,30 @@
+---
+- name: Validate RouterOS traffic-flow resources
+  ansible.builtin.assert:
+    that:
+      - routeros_traffic_flow_settings is mapping
+      - routeros_traffic_flow_targets is sequence
+      - >-
+        routeros_traffic_flow_targets | selectattr('address', 'defined') | list | length ==
+        routeros_traffic_flow_targets | length
+    fail_msg: Traffic-flow settings must be a mapping and targets require address.
+
+- name: Configure RouterOS traffic-flow settings
+  changed_when: true
+  when: routeros_traffic_flow_settings | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip traffic-flow set{% for option in routeros_traffic_flow_settings | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+
+- name: Add RouterOS traffic-flow targets
+  loop: "{{ routeros_traffic_flow_targets }}"
+  loop_control:
+    label: "{{ item.address }}"
+  changed_when: true
+  when: routeros_traffic_flow_targets | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip traffic-flow target add address={{ item.address }}{% if item.port is defined %} port={{ item.port }}{% endif %}{% if item.version is defined %} version={{ item.version }}{% endif %}{% if item.src_address is defined %} src-address={{ item.src_address }}{% endif %}
+...

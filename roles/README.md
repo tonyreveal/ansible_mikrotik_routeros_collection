@@ -9,7 +9,10 @@ This collection provides focused roles for common RouterOS automation functions:
 - `routeros_routing` — static and dynamic routing configuration
 - `routeros_vlan` — bridges, VLANs, trunks, and access ports
 - `routeros_access` — administrative users and services
-- `routeros_monitoring` — logging, SNMP, Netwatch, and telemetry
+- `routeros_snmp` — SNMP configuration
+- `routeros_netwatch` — Netwatch monitoring entries
+- `routeros_traffic_flow` — traffic-flow export configuration
+- `routeros_alert_destinations` — email alert delivery configuration
 - `routeros_compliance` — compliance evidence collection
 - `routeros_inventory` — platform and version inventory
 - `routeros_incident_response` — explicit emergency actions
@@ -20,6 +23,7 @@ This collection provides focused roles for common RouterOS automation functions:
 - `routeros_dhcp_server` — DHCP pools, networks, and server configuration
 - `routeros_dns` — DNS resolver and static entry configuration
 - `routeros_ntp` — NTP client and server configuration
+- `routeros_logging` — remote syslog and CEF logging configuration
 
 The mutating roles intentionally accept reviewed RouterOS command lists through
 namespaced variables. This keeps device-specific desired state in inventory or

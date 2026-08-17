@@ -1,0 +1,15 @@
+---
+- name: Validate RouterOS SNMP settings
+  ansible.builtin.assert:
+    that: routeros_snmp_settings is mapping
+    fail_msg: routeros_snmp_settings must be a mapping of RouterOS SNMP options.
+
+- name: Configure RouterOS SNMP
+  no_log: true
+  changed_when: true
+  when: routeros_snmp_settings | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /snmp set{% for option in routeros_snmp_settings | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

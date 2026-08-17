@@ -1,0 +1,15 @@
+---
+- name: Validate RouterOS alert destination settings
+  ansible.builtin.assert:
+    that: routeros_alert_destinations_email is mapping
+    fail_msg: routeros_alert_destinations_email must be an email option mapping.
+
+- name: Configure RouterOS email alert destination
+  no_log: true
+  changed_when: true
+  when: routeros_alert_destinations_email | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /tool e-mail set{% for option in routeros_alert_destinations_email | dict2items %} {{ option.key | replace('_', '-') }}={{ option.value }}{% endfor %}
+...

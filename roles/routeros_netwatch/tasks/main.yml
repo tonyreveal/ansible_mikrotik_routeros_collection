@@ -1,0 +1,21 @@
+---
+- name: Validate RouterOS Netwatch entries
+  ansible.builtin.assert:
+    that:
+      - routeros_netwatch_entries is sequence
+      - >-
+        routeros_netwatch_entries | selectattr('host', 'defined') | list | length ==
+        routeros_netwatch_entries | length
+    fail_msg: Netwatch entries must include host and may include an options mapping.
+
+- name: Add RouterOS Netwatch entries
+  loop: "{{ routeros_netwatch_entries }}"
+  loop_control:
+    label: "{{ item.host }}"
+  changed_when: true
+  when: routeros_netwatch_entries | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /tool netwatch add host={{ item.host }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

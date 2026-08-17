@@ -1,0 +1,12 @@
+---
+routeros_logging_remote_action:
+  name: remote
+  remote: ''
+  remote_port: 514
+  remote_log_format: syslog
+  syslog_facility: syslog
+  syslog_severity: auto
+  syslog_time_format: bsd-syslog
+  remote_protocol: udp
+routeros_logging_topic_rules: []
+...
