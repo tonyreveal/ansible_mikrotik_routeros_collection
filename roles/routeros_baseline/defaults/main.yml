@@ -1,5 +1,3 @@
 ---
 routeros_baseline_identity: {}
-routeros_baseline_dns: {}
-routeros_baseline_ntp: {}
 ...

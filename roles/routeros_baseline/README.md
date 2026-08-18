@@ -1,6 +1,7 @@
 # routeros_baseline
 
-Applies an organization-defined RouterOS baseline supplied through inventory variables.
+Applies the core RouterOS system identity baseline. DNS and NTP are intentionally
+managed by the dedicated `routeros_dns` and `routeros_ntp` roles.
 
 ## Requirements
 
@@ -20,17 +21,13 @@ Applies an organization-defined RouterOS baseline supplied through inventory var
       vars:
         routeros_baseline_identity:
           name: branch-router
-        routeros_baseline_dns:
-          servers: 10.0.0.53
 ```
 
 ## Role variables
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `routeros_baseline_identity` | `{}` | Router identity settings. |
-| `routeros_baseline_dns` | `{}` | `/ip dns set` options. |
-| `routeros_baseline_ntp` | `{}` | NTP client settings. |
+| `routeros_baseline_identity` | `{}` | Identity mapping; currently supports `name`. |
 
 ## Variable structure
 
@@ -39,20 +36,10 @@ Each mapping uses RouterOS option names as keys and their desired values as valu
 ```yaml
 routeros_baseline_identity:
   name: branch-router-01
-
-routeros_baseline_dns:
-  servers: 10.0.0.53,10.0.0.54
-  allow-remote-requests: false
-
-routeros_baseline_ntp:
-  enabled: true
-  mode: unicast
-  servers: 10.0.0.123
 ```
 
-`routeros_baseline_identity` currently expects `name`. DNS keys are passed to
-`/ip dns set`; NTP keys are passed to `/system ntp client set`. Use the exact
-RouterOS spelling for option names.
+`routeros_baseline_identity` expects `name`. Use `routeros_dns` and
+`routeros_ntp` for their respective settings.
 
 ## Notes
 

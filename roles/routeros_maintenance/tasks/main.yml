@@ -5,6 +5,7 @@
       - routeros_maintenance_reboot_timeout | int > 0
       - routeros_maintenance_connect_timeout | int > 0
     fail_msg: RouterOS maintenance variables are invalid.
+
 - name: Check for RouterOS package updates
   register: routeros_maintenance_update_check
   changed_when: false
@@ -12,6 +13,7 @@
   community.routeros.command:
     commands:
       - /system/package/update/check
+
 - name: Install RouterOS package updates
   changed_when: true
   when:
@@ -20,6 +22,7 @@
   community.routeros.command:
     commands:
       - /system/package/update/install
+
 - name: Reboot RouterOS device for maintenance
   register: routeros_maintenance_reboot_result
   changed_when: true
@@ -30,6 +33,7 @@
   community.routeros.command:
     commands:
       - /system/reboot
+
 - name: Wait for RouterOS maintenance reboot
   when: routeros_maintenance_reboot | bool
   ansible.builtin.wait_for_connection:

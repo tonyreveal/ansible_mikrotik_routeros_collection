@@ -3,6 +3,7 @@
   ansible.builtin.assert:
     that: routeros_inventory_collect_interfaces is boolean
     fail_msg: routeros_inventory_collect_interfaces must be boolean.
+
 - name: Collect RouterOS inventory
   register: routeros_inventory_result
   changed_when: false
@@ -12,6 +13,7 @@
       - /system/routerboard/print
       - /system/package/print
       - /interface/print
+
 - name: Publish RouterOS inventory
   ansible.builtin.set_fact:
     routeros_inventory: "{{ routeros_inventory_result.stdout }}"
