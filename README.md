@@ -115,16 +115,21 @@ Example playbook using the WireGuard role:
 Role-specific documentation is available in the source repository:
 
 - [routeros_access](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_access)
+- [routeros_alert_destinations](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_alert_destinations)
 - [routeros_backup](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_backup)
 - [routeros_baseline](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_baseline)
+- [routeros_bonding](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_bonding)
+- [routeros_bridge](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_bridge)
+- [routeros_compliance](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_compliance)
 - [routeros_dhcp_relay](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_dhcp_relay)
 - [routeros_dhcp_server](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_dhcp_server)
 - [routeros_dns](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_dns)
 - [routeros_firewall_config](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_firewall_config)
-- [routeros_logging](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_logging)
+- [routeros_incident_response](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_incident_response)
 - [routeros_inventory](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_inventory)
-- [routeros_alert_destinations](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_alert_destinations)
+- [routeros_logging](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_logging)
 - [routeros_maintenance](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_maintenance)
+- [routeros_mlag](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_mlag)
 - [routeros_netwatch](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_netwatch)
 - [routeros_ntp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_ntp)
 - [routeros_routing](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_routing)
@@ -159,7 +164,7 @@ may also seek assistance through the [Ansible Forum](https://forum.ansible.com/)
 
 ## Release notes
 
-Release history is maintained in the [GitHub releases page](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/releases).
+Release history is maintained in the [collection changelog](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/blob/main/CHANGELOG.md) and the [GitHub releases page](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/releases).
 
 The collection follows semantic versioning. Changes to role interfaces,
 RouterOS command behavior, collection dependencies, or supported Ansible

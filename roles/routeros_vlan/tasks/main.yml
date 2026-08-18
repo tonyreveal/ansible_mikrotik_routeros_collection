@@ -2,20 +2,12 @@
 - name: Validate VLAN resources
   ansible.builtin.assert:
     that:
-      - routeros_vlan_bridges is sequence
+      - routeros_vlan_bridge_name is string
+      - routeros_vlan_bridge_name | length > 0
       - routeros_vlan_interfaces is sequence
       - routeros_vlan_vlans is sequence
-    fail_msg: VLAN resources must be supplied as lists of mappings.
-- name: Manage RouterOS bridges
-  loop: "{{ routeros_vlan_bridges }}"
-  loop_control:
-    label: "{{ item.name }}"
-  changed_when: true
-  when: routeros_vlan_bridges | length > 0
-  community.routeros.command:
-    commands:
-      - >-
-        /interface bridge add name={{ item.name }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+    fail_msg: routeros_vlan_bridge_name must identify an existing RouterOS bridge.
+
 - name: Manage RouterOS VLAN interfaces
   loop: "{{ routeros_vlan_vlans }}"
   loop_control:
@@ -25,7 +17,8 @@
   community.routeros.command:
     commands:
       - >-
-        /interface vlan add name={{ item.name }} vlan-id={{ item.vlan_id }} interface={{ item.interface }}
+        /interface vlan add name={{ item.name }} vlan-id={{ item.vlan_id }} interface={{ item.interface | default(routeros_vlan_bridge_name) }}
+
 - name: Assign RouterOS bridge ports
   loop: "{{ routeros_vlan_interfaces }}"
   loop_control:
@@ -34,5 +27,5 @@
   when: routeros_vlan_interfaces | length > 0
   community.routeros.command:
     commands:
-      - "/interface bridge port add bridge={{ item.bridge }} interface={{ item.interface }}"
+      - "/interface bridge port add bridge={{ item.bridge | default(routeros_vlan_bridge_name) }} interface={{ item.interface }}"
 ...

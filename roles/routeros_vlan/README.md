@@ -1,6 +1,6 @@
 # routeros_vlan
 
-Configures RouterOS bridges, VLAN filtering, trunks, and access ports.
+Configures VLAN interfaces and bridge ports on an existing RouterOS bridge. Bridge creation is handled by `routeros_bridge`.
 
 ## Requirements
 
@@ -19,7 +19,7 @@ Configures RouterOS bridges, VLAN filtering, trunks, and access ports.
   roles:
     - role: routeros_vlan
       vars:
-        routeros_vlan_bridges: []
+        routeros_vlan_bridge_name: bridge-lan
         routeros_vlan_interfaces: []
         routeros_vlan_vlans: []
 ```
@@ -28,22 +28,14 @@ Configures RouterOS bridges, VLAN filtering, trunks, and access ports.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `routeros_vlan_bridges` | `[]` | Bridges with names and options. |
+| `routeros_vlan_bridge_name` | — | Existing bridge that receives the VLAN configuration. Required. |
 | `routeros_vlan_interfaces` | `[]` | Bridge-port assignments. |
 | `routeros_vlan_vlans` | `[]` | VLAN interfaces with name, VLAN ID, and parent interface. |
 
 ## Variable structure
 
-Bridge entries require `name`; optional bridge properties go under `options`:
-
-```yaml
-routeros_vlan_bridges:
-  - name: bridge-lan
-    options:
-      vlan-filtering: true
-```
-
-VLAN interface entries require `name`, `vlan_id`, and `interface`:
+VLAN interface entries require `name` and `vlan_id`. The optional `interface`
+overrides `routeros_vlan_bridge_name`; otherwise the existing bridge is used:
 
 ```yaml
 routeros_vlan_vlans:
@@ -52,19 +44,19 @@ routeros_vlan_vlans:
     interface: bridge-lan
 ```
 
-Bridge-port entries require the bridge and physical/interface names:
+Bridge-port entries require an interface name. The optional `bridge` overrides
+`routeros_vlan_bridge_name`:
 
 ```yaml
 routeros_vlan_interfaces:
-  - bridge: bridge-lan
-    interface: ether2
-  - bridge: bridge-lan
+  - interface: ether2
+  - bridge: another-existing-bridge
     interface: ether3
 ```
 
 ## Notes
 
-Incorrect VLAN filtering or trunk configuration can cut off management access. Test on representative hardware and use resource-specific state checks when converting command lists into production enforcement.
+The bridge must already exist; this role does not create it. Use `routeros_bridge` when bridge creation is required. Incorrect VLAN filtering or trunk configuration can cut off management access. Test on representative hardware and use resource-specific state checks for production enforcement.
 
 ## Quality checks
 
