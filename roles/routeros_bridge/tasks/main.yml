@@ -1,0 +1,21 @@
+---
+- name: Validate RouterOS bridge resources
+  ansible.builtin.assert:
+    that:
+      - routeros_bridge_interfaces is sequence
+      - >-
+        routeros_bridge_interfaces | selectattr('name', 'defined') | list | length ==
+        routeros_bridge_interfaces | length
+    fail_msg: Bridge entries require name and may include an options mapping.
+
+- name: Add RouterOS bridge interfaces
+  loop: "{{ routeros_bridge_interfaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_bridge_interfaces | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /interface bridge add name={{ item.name }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

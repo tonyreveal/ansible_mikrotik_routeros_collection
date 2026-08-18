@@ -1,0 +1,27 @@
+---
+- name: Validate RouterOS bonding resources
+  ansible.builtin.assert:
+    that:
+      - routeros_bonding_interfaces is sequence
+      - >-
+        routeros_bonding_interfaces | selectattr('name', 'defined') | list | length ==
+        routeros_bonding_interfaces | length
+      - >-
+        routeros_bonding_interfaces | selectattr('slaves', 'defined') | list | length ==
+        routeros_bonding_interfaces | length
+      - >-
+        routeros_bonding_interfaces | selectattr('slaves', 'sequence') | list | length ==
+        routeros_bonding_interfaces | length
+    fail_msg: Bonding entries require name and a list of slave interfaces.
+
+- name: Add RouterOS bonded interfaces
+  loop: "{{ routeros_bonding_interfaces }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_bonding_interfaces | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /interface bonding add name={{ item.name }} slaves={{ item.slaves | join(',') }}{% if item.mode is defined %} mode={{ item.mode }}{% endif %}{% if item.mlag_id is defined %} mlag-id={{ item.mlag_id }}{% endif %}{% if item.lacp_rate is defined %} lacp-rate={{ item.lacp_rate }}{% endif %}{% if item.transmit_hash_policy is defined %} transmit-hash-policy={{ item.transmit_hash_policy }}{% endif %}{% if item.link_monitoring is defined %} link-monitoring={{ item.link_monitoring }}{% endif %}{% if item.mii_monitor_interval is defined %} mii-monitor-interval={{ item.mii_monitor_interval }}{% endif %}{% if item.comment is defined %} comment="{{ item.comment }}"{% endif %}
+...

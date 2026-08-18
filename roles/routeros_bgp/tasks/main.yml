@@ -1,0 +1,20 @@
+---
+- name: Validate BGP peers
+  ansible.builtin.assert:
+    that:
+      - routeros_bgp_peers is sequence
+      - routeros_bgp_peers | selectattr('name', 'defined') | list | length == routeros_bgp_peers | length
+      - routeros_bgp_peers | selectattr('remote_address', 'defined') | list | length == routeros_bgp_peers | length
+    fail_msg: BGP peers require name and remote_address.
+
+- name: Configure RouterOS BGP peers
+  loop: "{{ routeros_bgp_peers }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_bgp_peers | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /routing bgp connection add name={{ item.name }} remote.address={{ item.remote_address }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...

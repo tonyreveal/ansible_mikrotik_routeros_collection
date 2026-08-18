@@ -1,0 +1,24 @@
+---
+- name: Validate RouterOS MLAG resources
+  ansible.builtin.assert:
+    that:
+      - routeros_mlag_bridges is sequence
+      - >-
+        routeros_mlag_bridges | selectattr('name', 'defined') | list | length ==
+        routeros_mlag_bridges | length
+      - >-
+        routeros_mlag_bridges | selectattr('mlag_peer_port', 'defined') | list | length ==
+        routeros_mlag_bridges | length
+    fail_msg: MLAG bridges require name and mlag_peer_port.
+
+- name: Configure RouterOS MLAG bridge settings
+  loop: "{{ routeros_mlag_bridges }}"
+  loop_control:
+    label: "{{ item.name }}"
+  changed_when: true
+  when: routeros_mlag_bridges | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /interface bridge set [find name={{ item.name }}] mlag-peer-port={{ item.mlag_peer_port }}{% if item.mlag_heartbeat is defined %} mlag-heartbeat={{ item.mlag_heartbeat }}{% endif %}{% if item.mlag_priority is defined %} mlag-priority={{ item.mlag_priority }}{% endif %}{% if item.protocol_mode is defined %} protocol-mode={{ item.protocol_mode }}{% endif %}
+...

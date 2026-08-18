@@ -1,0 +1,20 @@
+---
+- name: Validate static route resources
+  ansible.builtin.assert:
+    that:
+      - routeros_static_routes is sequence
+      - routeros_static_routes | selectattr('dst_address', 'defined') | list | length == routeros_static_routes | length
+      - routeros_static_routes | selectattr('gateway', 'defined') | list | length == routeros_static_routes | length
+    fail_msg: Static routes require dst_address and gateway.
+
+- name: Configure RouterOS static routes
+  loop: "{{ routeros_static_routes }}"
+  loop_control:
+    label: "{{ item.dst_address }}"
+  changed_when: true
+  when: routeros_static_routes | length > 0
+  community.routeros.command:
+    commands:
+      - >-
+        /ip route add dst-address={{ item.dst_address }} gateway={{ item.gateway }}{% for option in item.options | default({}) | dict2items %} {{ option.key }}={{ option.value }}{% endfor %}
+...
