@@ -1,7 +1,0 @@
----
-routeros_maintenance_update_packages: false
-routeros_maintenance_reboot: false
-routeros_maintenance_reboot: false
-routeros_maintenance_reboot_timeout: 600
-routeros_maintenance_connect_timeout: 30
-...

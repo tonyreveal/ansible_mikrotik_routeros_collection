@@ -9,7 +9,7 @@ through Ansible network connections.
 
 The collection includes focused roles for access control, backups, baseline
 configuration, firewall policy, VPNs, WireGuard, routing, VLANs, DHCP, DNS,
-NTP, logging, SNMP, Netwatch, traffic flow, alert destinations, compliance evidence, inventory, maintenance, and RouterOS
+NTP, logging, SNMP, Netwatch, traffic flow, alert destinations, compliance evidence, inventory, and RouterOS
 package and RouterBOARD upgrades.
 
 Roles expose structured variables and construct RouterOS commands internally.
@@ -129,7 +129,6 @@ Role-specific documentation is available in the source repository:
 - [routeros_incident_response](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_incident_response)
 - [routeros_inventory](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_inventory)
 - [routeros_logging](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_logging)
-- [routeros_maintenance](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_maintenance)
 - [routeros_mlag](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_mlag)
 - [routeros_netwatch](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_netwatch)
 - [routeros_ntp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_ntp)

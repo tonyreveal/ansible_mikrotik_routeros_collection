@@ -15,6 +15,8 @@ this file.
 
 - Removed the combined `routeros_routing` role in favor of focused routing roles.
 - Removed bond creation from `routeros_mlag`.
+- Removed the redundant `routeros_maintenance` role; package and RouterBOARD
+  upgrades are provided by `routeros_upgrade`.
 
 ### Updated
 
