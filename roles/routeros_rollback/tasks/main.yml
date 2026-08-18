@@ -1,0 +1,134 @@
+---
+- name: Validate RouterOS rollback inputs
+  ansible.builtin.assert:
+    that:
+      - routeros_rollback_package_url | length > 0
+      - routeros_rollback_package_filename | length > 0
+      - routeros_rollback_package_version | length > 0
+      - routeros_rollback_package_checksum | length > 0
+      - routeros_rollback_reboot_timeout | int > 0
+      - routeros_rollback_connect_timeout | int > 0
+      - routeros_rollback_wait_sleep | int > 0
+    fail_msg: A package URL, filename, target version, checksum, and valid timeouts are required.
+
+- name: Explain that rollback is unsupported in check mode
+  when: ansible_check_mode | bool
+  ansible.builtin.fail:
+    msg: >-
+      routeros_rollback downloads and installs a live RouterOS package and
+      cannot provide a meaningful check-mode prediction. Run without --check.
+
+- name: Check current RouterOS package version
+  register: routeros_rollback_current_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/resource/print
+      - /system/package/print
+
+- name: Determine whether the requested RouterOS version is already installed
+  ansible.builtin.set_fact:
+    routeros_rollback_needed: >-
+      {{ routeros_rollback_current_state.stdout | join('\n') is not search('version="' ~ routeros_rollback_package_version ~ '"', ignorecase=true) }}
+
+- name: Download the specified RouterOS package
+  register: routeros_rollback_download
+  changed_when: true
+  when: routeros_rollback_needed | bool
+  community.routeros.command:
+    commands:
+      - >-
+        /tool fetch url="{{ routeros_rollback_package_url }}" dst-path="{{ routeros_rollback_package_filename }}" mode={{ routeros_rollback_download_mode }}
+
+- name: Verify the downloaded RouterOS package checksum
+  register: routeros_rollback_checksum_result
+  changed_when: false
+  when: routeros_rollback_needed | bool
+  community.routeros.command:
+    commands:
+      - >-
+        :local expected "{{ routeros_rollback_package_checksum }}"; :local actual [/file get "{{ routeros_rollback_package_filename }}" checksum]; :if (
+        $actual != $expected) do={ :error "RouterOS package checksum mismatch" }
+
+- name: Install the specified RouterOS package
+  register: routeros_rollback_install
+  changed_when: true
+  when: routeros_rollback_needed | bool
+  community.routeros.command:
+    commands:
+      - /system/package/install file-name={{ routeros_rollback_package_filename }}
+
+- name: Wait for RouterOS package rollback reboot
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_rollback_reboot_timeout }}"
+    connect_timeout: "{{ routeros_rollback_connect_timeout }}"
+    sleep: "{{ routeros_rollback_wait_sleep }}"
+  when: routeros_rollback_needed | bool
+
+- name: Read RouterBOARD firmware state
+  register: routeros_rollback_routerboard_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/routerboard/print
+
+- name: Upgrade or install the matching RouterBOARD firmware
+  register: routeros_rollback_routerboard
+  changed_when: true
+  when:
+    - routeros_rollback_routerboard_upgrade | bool
+    - routeros_rollback_routerboard_state.stdout | join('\n') is search('upgrade-firmware=yes', ignorecase=true)
+  community.routeros.command:
+    commands:
+      - /system/routerboard/upgrade
+
+- name: Reboot after RouterBOARD firmware rollback
+  register: routeros_rollback_routerboard_reboot
+  changed_when: true
+  failed_when:
+    - routeros_rollback_routerboard_reboot.failed | default(false)
+    - >-
+      routeros_rollback_routerboard_reboot.msg | default('') is not
+      search('closed|unreachable|reset|timeout', ignorecase=true)
+  when:
+    - routeros_rollback_routerboard is defined
+    - routeros_rollback_routerboard is changed
+  community.routeros.command:
+    commands:
+      - /system/reboot
+
+- name: Wait for RouterOS after RouterBOARD firmware rollback
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_rollback_reboot_timeout }}"
+    connect_timeout: "{{ routeros_rollback_connect_timeout }}"
+    sleep: "{{ routeros_rollback_wait_sleep }}"
+  when:
+    - routeros_rollback_routerboard is defined
+    - routeros_rollback_routerboard is changed
+
+- name: Collect final RouterOS rollback state
+  register: routeros_rollback_final_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/resource/print
+      - /system/package/print
+
+- name: Collect final RouterBOARD rollback state
+  register: routeros_rollback_final_routerboard_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/routerboard/print
+
+- name: Validate requested RouterOS and RouterBOARD versions
+  ansible.builtin.assert:
+    that:
+      - routeros_rollback_final_state.stdout | join('\n') is search('version="' ~ routeros_rollback_package_version ~ '"', ignorecase=true)
+      - routeros_rollback_final_routerboard_state.stdout | length > 0
+      - >-
+        {{ (not routeros_rollback_routerboard_upgrade | bool) or
+           (routeros_rollback_final_routerboard_state.stdout | join('\n') is not search('upgrade-firmware=yes', ignorecase=true)) }}
+    fail_msg: RouterOS rollback or RouterBOARD firmware validation failed.
+    success_msg: Requested RouterOS package and matching RouterBOARD firmware state validated.
+...

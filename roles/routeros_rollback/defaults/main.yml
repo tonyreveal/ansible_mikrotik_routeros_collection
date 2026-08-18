@@ -1,0 +1,11 @@
+---
+routeros_rollback_package_url: ''
+routeros_rollback_package_filename: ''
+routeros_rollback_package_version: ''
+routeros_rollback_package_checksum: ''
+routeros_rollback_download_mode: https
+routeros_rollback_routerboard_upgrade: true
+routeros_rollback_reboot_timeout: 900
+routeros_rollback_connect_timeout: 30
+routeros_rollback_wait_sleep: 10
+...

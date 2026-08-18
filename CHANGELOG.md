@@ -3,6 +3,19 @@
 All notable changes to the `mikrotik.routeros` collection are documented in
 this file.
 
+## [1.3.0] - 2026-08-18
+
+### Added
+
+- Added `routeros_rollback` for installing an explicitly selected RouterOS
+  package version and aligning RouterBOARD firmware with that package.
+- Added checksum, reboot, reconnect, and final-state validation for rollback
+  operations.
+
+### Updated
+
+- Bumped the collection version to `1.3.0`.
+
 ## [1.2.0] - 2026-08-18
 
 ### Added

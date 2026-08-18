@@ -133,6 +133,7 @@ Role-specific documentation is available in the source repository:
 - [routeros_netwatch](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_netwatch)
 - [routeros_ntp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_ntp)
 - [routeros_ospf](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_ospf)
+- [routeros_rollback](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_rollback)
 - [routeros_snmp](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_snmp)
 - [routeros_static_routes](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_static_routes)
 - [routeros_traffic_flow](https://github.com/tonyreveal/ansible_mikrotik_routeros_collection/tree/main/roles/routeros_traffic_flow)

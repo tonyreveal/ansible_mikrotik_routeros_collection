@@ -1,0 +1,12 @@
+---
+- name: Verify routeros_rollback role syntax
+  hosts: routeros_devices
+  gather_facts: false
+  roles:
+    - role: routeros_rollback
+      vars:
+        routeros_rollback_package_url: https://packages.example.net/routeros-target.npk
+        routeros_rollback_package_filename: routeros-target.npk
+        routeros_rollback_package_version: 7.22.1
+        routeros_rollback_package_checksum: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+...
