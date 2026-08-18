@@ -1,0 +1,6 @@
+---
+routeros_restore_filename: ''
+routeros_restore_reboot_timeout: 600
+routeros_restore_connect_timeout: 30
+routeros_restore_wait_sleep: 10
+...

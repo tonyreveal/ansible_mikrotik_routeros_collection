@@ -1,6 +1,6 @@
 # routeros_backup
 
-Creates a RouterOS configuration export.
+Creates a native RouterOS binary `.backup` file.
 
 ## Requirements
 
@@ -29,7 +29,14 @@ Creates a RouterOS configuration export.
 
 ## Notes
 
-The export is created on the device with a name such as `ansible-backup-20260817-1354`. The timestamp uses UTC and minute precision. Retrieve the file with a separate controlled file-transfer process and protect it because exports may contain sensitive configuration. This task is intentionally reported changed when run.
+The binary backup is created on the device with a basename such as
+`ansible-backup-20260817-1354`; RouterOS stores it as a `.backup` file. The
+basename is generated with the exact format
+`{{ routeros_backup_filename_prefix }}-{{ now(utc=true, fmt='%Y%m%d-%H%M') }}`.
+The timestamp uses UTC and minute precision. Retrieve the file with a separate
+controlled file-transfer process and protect it because backups contain
+sensitive configuration. Restore it with `routeros_restore`. This task is
+intentionally reported changed when run.
 
 ## Quality checks
 

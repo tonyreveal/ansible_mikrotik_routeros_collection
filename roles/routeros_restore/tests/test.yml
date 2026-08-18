@@ -1,0 +1,9 @@
+---
+- name: Verify routeros_restore role syntax
+  hosts: routeros_devices
+  gather_facts: false
+  roles:
+    - role: routeros_restore
+      vars:
+        routeros_restore_filename: router-backup-20260817-1354.backup
+...

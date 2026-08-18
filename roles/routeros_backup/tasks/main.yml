@@ -7,10 +7,10 @@
       - routeros_backup_filename_prefix is not search('[^A-Za-z0-9_-]')
     fail_msg: routeros_backup_filename_prefix must contain only letters, numbers, underscores, or hyphens.
 
-- name: Create RouterOS configuration backup
+- name: Create RouterOS binary backup
   register: routeros_backup_result
   changed_when: true
   community.routeros.command:
     commands:
-      - "/export file={{ routeros_backup_filename_prefix }}-{{ now(utc=true, fmt='%Y%m%d-%H%M') }}"
+      - "/system backup save name={{ routeros_backup_filename_prefix }}-{{ now(utc=true, fmt='%Y%m%d-%H%M') }}"
 ...

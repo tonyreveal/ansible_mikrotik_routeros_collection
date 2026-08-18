@@ -11,10 +11,24 @@ this file.
   package version and aligning RouterBOARD firmware with that package.
 - Added checksum, reboot, reconnect, and final-state validation for rollback
   operations.
+- Added `routeros_restore` for loading a selected native RouterOS `.backup`
+  file.
+- Added `routeros_export` for creating timestamped plain-text `.rsc`
+  configuration exports.
+- Added restore reconnect handling and post-restore state validation.
 
 ### Updated
 
 - Bumped the collection version to `1.3.0`.
+- Updated `routeros_backup` to create native `.backup` files with
+  `/system/backup/save` and the timestamped basename used by
+  `routeros_restore`.
+
+### Corrected
+
+- Redesigned `routeros_restore` to load native RouterOS `.backup` files with
+  `/system/backup/load` instead of importing `.rsc` exports or requiring the
+  `ansible-backup` prefix.
 
 ## [1.2.0] - 2026-08-18
 

@@ -1,0 +1,69 @@
+---
+- name: Validate RouterOS restore inputs
+  ansible.builtin.assert:
+    that:
+      - routeros_restore_filename is string
+      - routeros_restore_filename | length > 0
+      - routeros_restore_filename is search('\\.backup$', ignorecase=true)
+      - routeros_restore_reboot_timeout | int > 0
+      - routeros_restore_connect_timeout | int > 0
+      - routeros_restore_wait_sleep | int > 0
+    fail_msg: An explicit .backup filename and valid timeouts are required.
+
+- name: Explain that restore is unsupported in check mode
+  when: ansible_check_mode | bool
+  ansible.builtin.fail:
+    msg: >-
+      routeros_restore changes live device configuration and cannot provide a
+      meaningful check-mode prediction. Run without --check.
+
+- name: Check that the selected RouterOS binary backup exists
+  register: routeros_restore_file_check
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - >-
+        /file print detail where name="{{ routeros_restore_filename }}"
+
+- name: Validate that the selected binary backup exists on the router
+  ansible.builtin.assert:
+    that:
+      - routeros_restore_file_check.stdout | join('\n') is search(routeros_restore_filename, ignorecase=false)
+    fail_msg: >-
+      The selected binary backup file {{ routeros_restore_filename }} was not
+      found on the RouterOS device. Transfer it before running this role.
+
+- name: Load the selected RouterOS binary backup
+  register: routeros_restore_result
+  changed_when: true
+  failed_when:
+    - routeros_restore_result.failed | default(false)
+    - >-
+      routeros_restore_result.msg | default('') is not
+      search('closed|unreachable|reset|timeout|reboot', ignorecase=true)
+  community.routeros.command:
+    commands:
+      - /system/backup/load name="{{ routeros_restore_filename }}"
+
+- name: Wait for RouterOS after binary backup restore
+  ansible.builtin.wait_for_connection:
+    timeout: "{{ routeros_restore_reboot_timeout }}"
+    connect_timeout: "{{ routeros_restore_connect_timeout }}"
+    sleep: "{{ routeros_restore_wait_sleep }}"
+  when: routeros_restore_result is changed
+
+- name: Collect post-restore RouterOS state
+  register: routeros_restore_final_state
+  changed_when: false
+  community.routeros.command:
+    commands:
+      - /system/resource/print
+      - /system/identity/print
+
+- name: Validate successful RouterOS restore
+  ansible.builtin.assert:
+    that:
+      - routeros_restore_final_state.stdout | length > 0
+    fail_msg: RouterOS binary backup restore validation failed because the device state could not be read.
+    success_msg: RouterOS binary backup loaded and device state validated.
+...

@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   author: Tony Reveal <https://github.com/tonyreveal>
-  description: Create a timestamped RouterOS binary backup.
+  description: Create a timestamped RouterOS plain-text configuration export.
   license: GPL-3.0-or-later
   min_ansible_version: '2.16'
   galaxy_tags:

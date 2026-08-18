@@ -1,0 +1,9 @@
+---
+- name: Verify routeros_export role syntax
+  hosts: routeros_devices
+  gather_facts: false
+  roles:
+    - role: routeros_export
+      vars:
+        routeros_export_filename_prefix: ansible-export
+...
